@@ -1,0 +1,11 @@
+{
+  "name": "expense-tracker-site",
+  "private": true,
+  "description": "The Expense Tracker app's password reset page, served by GitHub Pages from docs/.",
+  "scripts": {
+    "test": "node --test tests/reset.test.js"
+  },
+  "devDependencies": {
+    "jsdom": "^28.1.0"
+  }
+}

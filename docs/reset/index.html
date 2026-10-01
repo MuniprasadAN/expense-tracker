@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- The only place this page may talk to is the app's own Supabase project,
+       and a form that somehow submitted natively is blocked rather than sent.
+       It has to stay above every tag that loads something: a policy in a meta
+       tag covers only what comes after it. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src https://ngvsjlgjgsrliqnvmzlr.supabase.co; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="color-scheme" content="light dark">
+  <title>Set a new password - Expense Tracker</title>
+  <link rel="icon" type="image/png" href="../icon-192.png">
+  <link rel="stylesheet" href="../site.css">
+  <noscript><link rel="stylesheet" href="../noscript.css"></noscript>
+</head>
+<body>
+  <main class="card">
+    <span class="brand">Expense Tracker</span>
+
+    <noscript>
+      <h1>Set a new password</h1>
+      <p>This page needs JavaScript to set your password. Turn it on for this site and reload, or open the link from your email in another browser.</p>
+    </noscript>
+
+    <!-- On screen until reset.js picks a view. If the script never arrives
+         this is all there is, so it says what to do about that. -->
+    <p id="loading" class="lead">Loading… If this page stays like this, reload it.</p>
+
+    <!-- Every view starts hidden. reset.js shows exactly one of them. -->
+    <section id="view-form" hidden>
+      <h1 tabindex="-1">Set a new password</h1>
+      <p class="lead">Choose a new password for your Expense Tracker account. You will type it into the app afterwards, so pick one you can remember.</p>
+      <!-- method="post" is a backstop only: the script handles the submit and
+           the policy above blocks a native one. Should both ever fail, a POST
+           keeps the password out of the address. -->
+      <form id="reset-form" method="post" novalidate>
+        <div class="field">
+          <label for="password">New password</label>
+          <div class="input-row">
+            <input id="password" name="new-password" type="password" autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="password-rule password-error">
+            <button type="button" id="toggle" class="ghost" aria-label="Show password">Show</button>
+          </div>
+          <p id="password-rule" class="hint">At least 10 characters, with a capital, a lowercase and a digit</p>
+          <p id="password-error" class="error" aria-live="polite"></p>
+        </div>
+        <div class="field">
+          <label for="confirm">Confirm password</label>
+          <input id="confirm" name="confirm-password" type="password" autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false" aria-describedby="confirm-error">
+          <p id="confirm-error" class="error" aria-live="polite"></p>
+        </div>
+        <p id="form-error" class="banner" role="alert"></p>
+        <button type="submit" id="submit" class="primary">Set new password</button>
+        <p class="hint center">Signing in anywhere will need the new password.</p>
+      </form>
+    </section>
+
+    <section id="view-done" hidden>
+      <h1 tabindex="-1">Password changed</h1>
+      <p>Open Expense Tracker on your phone and sign in by typing your new password.</p>
+      <p class="hint">If the app offers a saved password, it may be the old one, so type the new one yourself. Any device that was signed in will ask for it too. You can close this page.</p>
+    </section>
+
+    <section id="view-invalid" hidden>
+      <h1 tabindex="-1">This link no longer works</h1>
+      <p>Reset links work once, and for one hour. This one is too old, was already used, or was replaced by a newer reset email. Nothing was changed just now.</p>
+      <ul class="steps">
+        <li>If you already set a new password with this link, sign in to the app with that password.</li>
+        <li>If you asked for a reset more than once, use the button in the newest email.</li>
+      </ul>
+      <p>Otherwise, get a new link:</p>
+      <ol class="steps">
+        <li>Open Expense Tracker on your phone.</li>
+        <li>On the sign-in screen, tap <strong>Forgot password?</strong></li>
+        <li>Use the button in the newest email.</li>
+      </ol>
+      <p class="hint">Still stuck? Write to <a href="mailto:expensetrackerhq@gmail.com">expensetrackerhq@gmail.com</a>.</p>
+    </section>
+
+    <section id="view-missing" hidden>
+      <h1 tabindex="-1">Open this page from your reset email</h1>
+      <p>This page sets a new Expense Tracker password. It only works when it is opened with the button in a reset email.</p>
+      <p>To get that email:</p>
+      <ol class="steps">
+        <li>Open Expense Tracker on your phone.</li>
+        <li>On the sign-in screen, tap <strong>Forgot password?</strong></li>
+        <li>Use the button in the email that arrives.</li>
+      </ol>
+      <p class="hint">Still stuck? Write to <a href="mailto:expensetrackerhq@gmail.com">expensetrackerhq@gmail.com</a>.</p>
+    </section>
+
+    <section id="view-framed" hidden>
+      <h1 tabindex="-1">Open this page in its own tab</h1>
+      <p>To keep your password safe, this page does not work inside another page. Open the link from your email in a new tab.</p>
+    </section>
+  </main>
+  <script src="reset.js" defer></script>
+</body>
+</html>
