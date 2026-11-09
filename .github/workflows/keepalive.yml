@@ -1,0 +1,63 @@
+# Keeps the Expense Tracker's Supabase project awake.
+#
+# Supabase pauses a Free-plan project after about a week with no traffic.
+# While it is paused the app cannot sign in, sync or send email (that is what
+# happened in November 2026). One small database read a day prevents it.
+#
+# - The read is username_available('keepalive'), the one function the public
+#   role may call. It looks in public.profiles and answers true or false.
+#   Nothing is written.
+# - The key is the project's publishable key, the same one docs/reset/reset.js
+#   ships. It is public by design.
+# - No third-party actions, because this repo serves the password-reset page.
+#   Only curl and gh, both already on GitHub's runner, run here.
+# - If a run fails, GitHub emails the repo owner. A failure usually means the
+#   project got paused anyway: restore it in the Supabase dashboard.
+
+name: Keep Supabase awake
+
+on:
+  schedule:
+    - cron: '17 3 * * *'  # every day at 03:17 UTC (08:47 IST)
+  workflow_dispatch:
+
+permissions:
+  actions: write  # used only by the last step
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read from the database
+        env:
+          SUPABASE_URL: https://ngvsjlgjgsrliqnvmzlr.supabase.co
+          PUBLISHABLE_KEY: sb_publishable_CFZJGRthBSgc8ZFJoAd81Q_yJtQ5IV1
+        run: |
+          for attempt in 1 2 3; do
+            reply=$(curl -sS --max-time 30 -w '\n%{http_code}' \
+              -X POST "$SUPABASE_URL/rest/v1/rpc/username_available" \
+              -H "apikey: $PUBLISHABLE_KEY" \
+              -H 'Content-Type: application/json' \
+              -d '{"candidate":"keepalive"}') || reply=$'\n000'
+            code=${reply##*$'\n'}
+            answer=${reply%$'\n'*}
+            echo "Attempt $attempt: HTTP $code, answer: $answer"
+            if [ "$code" = 200 ] && { [ "$answer" = true ] || [ "$answer" = false ]; }; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then sleep 60; fi
+          done
+          echo "::error::Supabase did not answer. The project is probably paused. Restore it at https://supabase.com/dashboard/project/ngvsjlgjgsrliqnvmzlr"
+          exit 1
+
+      - name: Keep this schedule switched on
+        # GitHub switches off scheduled workflows in a public repo after 60 days
+        # without activity. Re-enabling it on every run resets that clock. It
+        # runs even when the ping failed, so a long outage does not end the
+        # schedule too.
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api -X PUT "repos/$GITHUB_REPOSITORY/actions/workflows/keepalive.yml/enable"
