@@ -2,7 +2,7 @@
 #
 # Supabase pauses a Free-plan project after about a week with no traffic.
 # While it is paused the app cannot sign in, sync or send email (that is what
-# happened in November 2026). One small database read a day prevents it.
+# happened in November 2026). A small database read twice a day prevents it.
 #
 # - The read is username_available('keepalive'), the one function the public
 #   role may call. It looks in public.profiles and answers true or false.
@@ -18,7 +18,12 @@ name: Keep Supabase awake
 
 on:
   schedule:
-    - cron: '17 3 * * *'  # every day at 03:17 UTC (08:47 IST)
+    # Two slots a day. GitHub can delay or drop a scheduled run when it is
+    # busy (the first slot, 03:17 UTC on 2026-11-10, never ran), and a run
+    # that never starts sends no failure email. Supabase pauses only after
+    # about a week idle, so two chances a day leave plenty of slack.
+    - cron: '17 3 * * *'   # 03:17 UTC (08:47 IST)
+    - cron: '47 15 * * *'  # 15:47 UTC (21:17 IST)
   workflow_dispatch:
 
 permissions:
